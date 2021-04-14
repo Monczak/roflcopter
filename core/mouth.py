@@ -6,6 +6,8 @@ import math
 
 
 class Mouth:
+    base_freq = 100
+
     @classmethod
     def apply_formant(cls, waveform, formant, width):
         return filters.butter_bandpass_filter(waveform, formant * (1 - width), formant * (1 + width))
@@ -68,7 +70,9 @@ class Mouth:
     @classmethod
     def connect_phonemes(cls, tones, border_length):
         result = np.empty(1)
-        for i in range(len(tones) - 1):
-            cross_tone = cls.border_crossfade(tones[i], tones[i + 1], border_length)
-            result = np.concatenate((result, cross_tone))
-        return np.concatenate((result, tones[-1]))
+        if isinstance(tones, tuple) or isinstance(tones, list):
+            for i in range(len(tones) - 1):
+                cross_tone = cls.border_crossfade(tones[i], tones[i + 1], min((border_length, len(tones[i]), len(tones[i + 1]))))
+                result = np.concatenate((result, cross_tone))
+            return np.concatenate((result, tones[-1]))
+        return np.concatenate((result, tones))
